@@ -23,6 +23,9 @@ type backup struct {
 func New(ctx context.Context, io util.IO) *cobra.Command {
 	b := backup{IO: io}
 
+	// TODO: ensure incremental backup is correct across all databases for each
+	// filesystem. Add a fingerprint to the backup manifest. <<<<<
+
 	cmd := &cobra.Command{
 		Use:     "backup",
 		Short:   "TODO",
