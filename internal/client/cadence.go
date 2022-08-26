@@ -1,4 +1,4 @@
-package manager
+package client
 
 import (
 	"context"
@@ -7,14 +7,38 @@ import (
 	"sort"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3"
+
 	"github.com/joshvanl/yazbu/internal/backup"
 )
 
 // executeCadence will delete all backup entries which need to be deleted,
 // according to the cadence.
-func (m *Manager) executeCadence(ctx context.Context, db *backup.DB) error {
-	m.log.Info("checking database to delete stale backups based on configured cadence...")
+func (f *fsclient) executeCadence(ctx context.Context, db backup.DB) error {
+	f.log.Info("checking database to delete stale backups based on configured cadence...")
 
+	markedForDeletion, err := f.markedForDeletion(ctx, db)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range markedForDeletion {
+		log := f.log.WithValues("name", entry.ID, "timestamp", entry.Timestamp, "type", entry.Type)
+		log.Info("deleting backup")
+		if _, err := f.s3.DeleteObject(&s3.DeleteObjectInput{
+			Bucket: aws.String(f.bucket),
+			Key:    aws.String(entry.S3Key),
+		}); err != nil {
+			return err
+		}
+		log.Info("backup deleted")
+	}
+
+	return nil
+}
+
+func (f *fsclient) markedForDeletion(ctx context.Context, db backup.DB) ([]backup.Entry, error) {
 	now := time.Now()
 
 	var (
@@ -64,7 +88,7 @@ func (m *Manager) executeCadence(ctx context.Context, db *backup.DB) error {
 			incrementalsSinceLast = append(incrementalsSinceLast, entry)
 		} else {
 			// Delete incremental backups which are older than the last full backup.
-			m.log.Error(errors.New("marking rouge incremental backup for deletion"),
+			f.log.Error(errors.New("marking rouge incremental backup for deletion"),
 				"found incremental backup which is older than the last full backup. Something has gone wrong, but lets clean up",
 				"id", entry.ID, "timestamp", entry.Timestamp,
 			)
@@ -83,7 +107,9 @@ func (m *Manager) executeCadence(ctx context.Context, db *backup.DB) error {
 			continue
 		}
 		if entry.ID != i+1 {
-			return fmt.Errorf("something's fucked up. incremental backups are corrupted (missing a step between %d and %d)- returning error to be safe. Please fix manually (probably by manually deleting all incremental backups. Sorry friend.)", i, entry.ID)
+			return nil, fmt.Errorf(
+				"something's fucked up. incremental backups are corrupted (missing a step between %d and %d)- returning error to be safe. Please fix manually (probably by manually deleting all incremental backups. Sorry friend.)",
+				i, entry.ID)
 		}
 		i++
 	}
@@ -99,7 +125,7 @@ func (m *Manager) executeCadence(ctx context.Context, db *backup.DB) error {
 	} {
 		for len(set.entries) > set.max {
 			n := len(set.entries) / 2
-			m.log.Info("deleting full backup from "+set.name,
+			f.log.Info("deleting full backup from "+set.name,
 				"id", set.entries[n].ID,
 				"timestamp", set.entries[n].Timestamp,
 				"backups", len(set.entries),
@@ -113,7 +139,7 @@ func (m *Manager) executeCadence(ctx context.Context, db *backup.DB) error {
 	for year, entries := range full365Plus {
 		for len(entries) > int(db.Cadence.FullPer365Over365Days) {
 			n := len(entries) / 2
-			m.log.Info("deleting full backup from full365Plus",
+			f.log.Info("deleting full backup from full365Plus",
 				"id", fullLast45[n].ID,
 				"timestamp", fullLast45[n].Timestamp,
 				"backups", len(fullLast45),
@@ -125,5 +151,5 @@ func (m *Manager) executeCadence(ctx context.Context, db *backup.DB) error {
 		}
 	}
 
-	return nil
+	return markedForDeletion, nil
 }

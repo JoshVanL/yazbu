@@ -50,16 +50,11 @@ type fsclient struct {
 
 // writeFull writes the full backup of the filesystem to the S3 bucket. Updates
 // the database file with
-func (f *fsclient) writeFull(ctx context.Context, key string, size uint64, rc zfs.ZFSReader) (fsrunner, error) {
+func (f *fsclient) writeFull(ctx context.Context, db backup.DB, key string, size uint64, rc zfs.ZFSReader) (fsrunner, error) {
 	log := f.log.WithName(key)
 
 	f.lock.Lock()
 	defer f.lock.Unlock()
-
-	db, err := f.getDB(ctx)
-	if err != nil {
-		return nil, err
-	}
 
 	return func(ctx context.Context) error {
 		log.Info("writing full backup")

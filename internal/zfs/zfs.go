@@ -45,7 +45,7 @@ func SnapshotCreate(ctx context.Context, log logr.Logger, filesystem string) (st
 }
 
 // SnapshotSendFull sends the given zfs full snapshot to the returned reader.
-func SnapshotSend(ctx context.Context, log logr.Logger, snapshot string) (ZFSReader, error) {
+func SnapshotSendFull(ctx context.Context, log logr.Logger, snapshot string) (ZFSReader, error) {
 	log = log.WithName("zfs_send_full")
 	log.Info("sending snapshot", "snapshot", snapshot)
 

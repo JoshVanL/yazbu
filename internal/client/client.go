@@ -153,11 +153,22 @@ func (c *Client) ListDBs(ctx context.Context) ([]backup.DB, error) {
 func (c *Client) BackupWriteFull(ctx context.Context, key string, size uint64, rc zfs.ZFSReader) error {
 	var runners []fsrunner
 	for _, fs := range c.fsclients {
-		runner, err := fs.writeFull(ctx, key, size, rc)
+		db, err := fs.getDB(ctx)
 		if err != nil {
 			return err
 		}
-		runners = append(runners, runner)
+
+		runner, err := fs.writeFull(ctx, db, key, size, rc)
+		if err != nil {
+			return err
+		}
+
+		runners = append(runners, func(ctx context.Context) error {
+			if err := runner(ctx); err != nil {
+				return err
+			}
+			return fs.executeCadence(ctx, db)
+		})
 	}
 
 	ctx, cancel := context.WithCancel(ctx)

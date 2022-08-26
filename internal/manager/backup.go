@@ -68,7 +68,7 @@ func (m *Manager) backupFullFS(ctx context.Context, fs string) error {
 			defer wg.Done()
 
 			f := func() error {
-				rc, err := zfs.SnapshotSend(ctx, m.log, snapshot)
+				rc, err := zfs.SnapshotSendFull(ctx, m.log, snapshot)
 				if err != nil {
 					return fmt.Errorf("failed to send snapshot: %w", err)
 				}
