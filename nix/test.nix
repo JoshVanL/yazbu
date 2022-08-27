@@ -1,43 +1,18 @@
-let
-  nixpkgs = fetchTarball "https://github.com/NixOS/nixpkgs/archive/376485f1ef53272bb0474d6554ae0a5bb116533b.tar.gz";
-  pkgs = import nixpkgs {};
+{ pkgs ? import ./nixpkgs.nix { }, ... }:
 
-  s3mockFromDockerHub = pkgs.dockerTools.pullImage {
-    imageName = "adobe/s3mock";
-    imageDigest = "sha256:151bce411c68caa7055097fe9145631e8caad8ad57596d62391539dc116277cb";
-    sha256 = "sha256-gmqzV3KVwAv4EoWQ729OHVdqK8+OI5Spprykfj+S+z4=";
-    finalImageTag = "2.4.16";
-    finalImageName = "s3mock";
+let
+  s3proxyFromDockerHub = pkgs.dockerTools.pullImage {
+    imageName = "andrewgaul/s3proxy";
+    imageDigest = "sha256:f5d4fc2ccad9c6f90b226d2d47d75311dbdeb40793bb094cc0bfb30235a9c250";
+    sha256 = "sha256-dIlEVi4/RJjCSzHYHN9RO1CvaEu/3j7WMpwJKWSPr+o=";
+    finalImageTag = "sha-ba0fd6d";
+    finalImageName = "s3proxy";
   };
 
-  testScript = pkgs.writeShellScriptBin "test.sh" (builtins.readFile ./test.sh);
+  repo = ../.;
 
   yazbu = pkgs.callPackage ./build.nix {};
-
-  testConfigFile = ''
-    buckets:
-    - name: joshvanl-test
-      region: auto
-      storageClass: STANDARD
-      endpoint: http://localhost:9090
-      accessKey: server-1-access-key
-      secretKey: server-1-secret-key
-    - name: joshvanl-test
-      region: auto
-      storageClass: STANDARD
-      endpoint: http://localhost:9091
-      accessKey: server-2-access-key
-      secretKey: server-2-secret-key
-    filesystems:
-    - yazbu/testing-1
-    - yazbu/testing-2
-    cadence:
-      incrementalPerLastFull: 7
-      fullLast45Days: 10
-      full45To182Days: 10
-      full182To365Days: 5
-      fullPer365Over365Days: 4
-  '';
+  yazbu-test = pkgs.callPackage ./build-test.nix {};
 
 in pkgs.nixosTest ({
   name = "yazbu integration tests";
@@ -57,13 +32,10 @@ in pkgs.nixosTest ({
         emptyDiskImages = [ 4096 ];
         docker.enable = true;
       };
-      environment = {
-        etc = { "yazbu/config.yaml" = { text = testConfigFile; }; };
-        systemPackages = with pkgs; [
-          zfs parted docker
-          testScript yazbu
-        ];
-      };
+      environment.systemPackages = with pkgs; [
+        zfs parted docker go_1_19
+        yazbu yazbu-test
+      ];
     };
   };
 
@@ -72,7 +44,6 @@ in pkgs.nixosTest ({
 
     machine.succeed(
       "modprobe zfs",
-      "zpool status",
       "udevadm settle",
       "parted --script /dev/vdb mklabel msdos",
       "parted --script /dev/vdb -- mkpart primary 1024M -1s",
@@ -84,22 +55,28 @@ in pkgs.nixosTest ({
       "mount -t zfs yazbu/test-1 /yazbu/testing-1",
       "mount -t zfs yazbu/test-2 /yazbu/testing-2",
       "udevadm settle",
-      "zfs list",
     )
 
     machine.succeed(
-      "docker load --input='${s3mockFromDockerHub}'",
-      "docker run -d -p 9090:9090 --hostname s3mock-server-1 s3mock:2.4.16",
-      "docker run -d -p 9091:9090 --hostname s3mock-server-2 s3mock:2.4.16",
+      "docker load --input='${s3proxyFromDockerHub}'",
+      "docker run -d -p 80:80 --hostname s3proxy-server-1 --env S3PROXY_AUTHORIZATION=none s3proxy:sha-ba0fd6d",
+      "docker run -d -p 81:80 --hostname s3proxy-server-2 --env S3PROXY_AUTHORIZATION=none s3proxy:sha-ba0fd6d",
     )
 
-    machine.wait_for_open_port(9090)
-    machine.wait_for_open_port(9091)
-    machine.wait_until_succeeds("curl http://localhost:9090")
-    machine.wait_until_succeeds("curl http://localhost:9091")
+    machine.wait_for_open_port(80)
+    machine.wait_for_open_port(81)
+    machine.wait_until_succeeds("curl -s http://localhost:80")
+    machine.wait_until_succeeds("curl -s http://localhost:81")
 
     machine.succeed(
-      "YAZBU_E2E=1 test.sh"
+      "yazbu-test \
+        -endpoint-1=http://localhost:80 \
+        -endpoint-2=http://localhost:81 \
+        -filesystem-1=yazbu/testing-1 \
+        -filesystem-2=yazbu/testing-2 \
+        -bucketname-1=joshvanl-test-1 \
+        -bucketname-2=joshvanl-test-2 \
+      "
     )
   '';
 })

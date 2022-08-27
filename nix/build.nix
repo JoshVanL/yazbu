@@ -1,18 +1,15 @@
-{ lib
-, buildGo119Module
-, installShellFiles
-}:
+{ pkgs ? import ./nixpkgs.nix { } }:
 
-buildGo119Module rec {
+pkgs.buildGo119Module rec {
   pname = "yazbu";
-  version = "0.0.1";
+  version = "0.0.2";
 
   src = ../.;
 
-  vendorSha256 = "sha256-tIr1m7O46eImG/Sa8+tAIzuEl9R79P9HlAC2HX62BQY=";
+  vendorSha256 = "sha256-dsFA+s6zHyGgl/FqtncwkHfPlJve0gFZP6ooTLN01ZM=";
   subPackages = [ "cmd" ];
-
-  nativeBuildInputs = [ installShellFiles ];
+  doChecks = false;
+  nativeBuildInputs = [ pkgs.installShellFiles ];
 
   postInstall = ''
     mv $out/bin/cmd $out/bin/yazbu
@@ -22,7 +19,7 @@ buildGo119Module rec {
       --zsh <($out/bin/yazbu completion zsh)
   '';
 
-  meta = with lib; {
+  meta = with pkgs.lib; {
     description = "Yet Another ZFS BackerUper.";
     longDescription = ''
       yazbu is a Yet Another ZFS BackerUper.
