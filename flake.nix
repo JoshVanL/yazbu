@@ -17,7 +17,7 @@
       in {
         packages.${packageName} = yazbu;
 
-        devShell = pkgs.mkShell {
+        devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [ yazbu ];
         };
     });
