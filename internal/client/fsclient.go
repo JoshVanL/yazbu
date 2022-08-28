@@ -159,10 +159,10 @@ remote:
 	}, nil
 }
 
-// tidyDB removes old entries from the database file which no longer exist.
-func (f *fsclient) tidyDB(ctx context.Context, db backup.DB) error {
-	return nil
-}
+//// tidyDB removes old entries from the database file which no longer exist.
+//func (f *fsclient) tidyDB(ctx context.Context, db backup.DB) error {
+//	return nil
+//}
 
 // ensureDBFiles ensures that the database file exists in the bucket
 // filesystem.

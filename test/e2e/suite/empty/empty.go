@@ -19,6 +19,7 @@ var _ = framework.CasesDescribe("Empty database should list", func() {
 
 		By("First list should write database files")
 		out, err := f.Helper().YazbuList(ctx, f.Helper().YazbuDefaultConfig())
+		Expect(err).ToNot(HaveOccurred())
 		Expect(out).To(MatchRegexp(`9090/joshvanl-test-1/client/yazbu/testing-2: "level"=0 "msg"="db file does not exist, writing" "db_file"="joshvanl-test-1/yazbu/testing-2/backup.db`))
 		Expect(out).To(MatchRegexp(`9090/joshvanl-test-2/client/yazbu/testing-2: "level"=0 "msg"="db file does not exist, writing" "db_file"="joshvanl-test-2/yazbu/testing-2/backup.db`))
 		Expect(out).To(MatchRegexp(`9090/joshvanl-test-2/client/yazbu/testing-1: "level"=0 "msg"="db file does not exist, writing" "db_file"="joshvanl-test-2/yazbu/testing-1/backup.db`))

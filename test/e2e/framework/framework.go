@@ -42,10 +42,15 @@ func (f *Framework) BeforeEach() {
 
 	f.helper = helper.New(f.config)
 
-	list, err := f.helper.S3(config.GetConfig().Endpoint1).ListBuckets(new(s3.ListBucketsInput))
+	client1, err := f.helper.S3(config.GetConfig().Endpoint1)
+	Expect(err).NotTo(HaveOccurred())
+	client2, err := f.helper.S3(config.GetConfig().Endpoint2)
+	Expect(err).NotTo(HaveOccurred())
+
+	list, err := client1.ListBuckets(new(s3.ListBucketsInput))
 	Expect(err).NotTo(HaveOccurred())
 	Expect(list.Buckets).Should(BeEmpty())
-	list, err = f.helper.S3(config.GetConfig().Endpoint2).ListBuckets(new(s3.ListBucketsInput))
+	list, err = client2.ListBuckets(new(s3.ListBucketsInput))
 	Expect(err).NotTo(HaveOccurred())
 	Expect(list.Buckets).Should(BeEmpty())
 
@@ -64,10 +69,10 @@ func (f *Framework) BeforeEach() {
 		).NotTo(HaveOccurred())
 	}
 
-	list, err = f.helper.S3(config.GetConfig().Endpoint1).ListBuckets(new(s3.ListBucketsInput))
+	list, err = client1.ListBuckets(new(s3.ListBucketsInput))
 	Expect(err).NotTo(HaveOccurred())
 	Expect(list.Buckets).Should(HaveLen(2))
-	list, err = f.helper.S3(config.GetConfig().Endpoint2).ListBuckets(new(s3.ListBucketsInput))
+	list, err = client2.ListBuckets(new(s3.ListBucketsInput))
 	Expect(err).NotTo(HaveOccurred())
 	Expect(list.Buckets).Should(HaveLen(2))
 }
@@ -91,10 +96,15 @@ func (f *Framework) AfterEach() {
 		).NotTo(HaveOccurred())
 	}
 
-	list, err := f.helper.S3(config.GetConfig().Endpoint1).ListBuckets(new(s3.ListBucketsInput))
+	client1, err := f.helper.S3(config.GetConfig().Endpoint1)
+	Expect(err).NotTo(HaveOccurred())
+	client2, err := f.helper.S3(config.GetConfig().Endpoint2)
+	Expect(err).NotTo(HaveOccurred())
+
+	list, err := client1.ListBuckets(new(s3.ListBucketsInput))
 	Expect(err).NotTo(HaveOccurred())
 	Expect(list.Buckets).Should(BeEmpty())
-	list, err = f.helper.S3(config.GetConfig().Endpoint2).ListBuckets(new(s3.ListBucketsInput))
+	list, err = client2.ListBuckets(new(s3.ListBucketsInput))
 	Expect(err).NotTo(HaveOccurred())
 	Expect(list.Buckets).Should(BeEmpty())
 }

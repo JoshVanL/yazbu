@@ -86,16 +86,20 @@ func (h *Helper) CreateBucket(ctx context.Context, endpoint, bucket string) erro
 	return nil
 }
 
-func (h *Helper) S3(endpoint string) *s3.S3 {
+func (h *Helper) S3(endpoint string) (*s3.S3, error) {
 	url, err := url.Parse(endpoint)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return s3.New(session.New(&aws.Config{
+	sess, err := session.NewSession(&aws.Config{
 		Endpoint: aws.String(url.Host), Region: aws.String("region"),
 		DisableSSL:  aws.Bool(true),
 		Credentials: credentials.NewStaticCredentials("remote-identity", "remote-credential", ""),
-	}))
+	})
+	if err != nil {
+		return nil, err
+	}
+	return s3.New(sess), nil
 }
 
 func (h *Helper) YazbuList(ctx context.Context, config *config.Config) (string, error) {
