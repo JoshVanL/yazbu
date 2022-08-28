@@ -18,7 +18,7 @@ jobs:
     - uses: nixbuild/nix-quick-install-action@v17
       with:
         nix_conf: experimental-features = nix-command flakes
-    - run: nix-shell --pure --run "golangci-lint run --timeout 15me"
+    - run: nix-shell --pure --run "GOROOT=$(go env GOROOT) golangci-lint run -v --timeout 15m"
   e2e:
     needs:
     - unit
