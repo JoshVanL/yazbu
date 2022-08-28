@@ -1,0 +1,26 @@
+name: Test
+on:
+- pull_request
+- push
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: nixbuild/nix-quick-install-action@v17
+    - run: nix-shell --pure --run "go test -v --race ./cmd/... ./internal/..."
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: nixbuild/nix-quick-install-action@v17
+    - run: nix-shell --pure --run "golangci-lint run --timeout 15me"
+  e2e:
+    needs:
+    - unit
+    - lint
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: nixbuild/nix-quick-install-action@v17
+    - run: nix-build nix/test.nix
