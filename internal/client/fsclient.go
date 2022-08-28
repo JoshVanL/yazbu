@@ -91,7 +91,7 @@ func (f *fsclient) writeFull(ctx context.Context, db backup.DB, key string, size
 			Size:      size,
 		})
 
-		f.log.Info("updating database file", "db_file", f.dbKey)
+		log.Info("updating database file", "db_file", f.dbKey)
 
 		var buf bytes.Buffer
 		if err := json.NewEncoder(&buf).Encode(&db); err != nil {
@@ -186,10 +186,13 @@ func (f *fsclient) ensureDBFile(ctx context.Context) error {
 			Bucket:       aws.String(f.bucket),
 			Key:          aws.String(f.dbKey),
 			Body:         &buf,
+			ContentType:  aws.String("application/json"),
 			StorageClass: aws.String("STANDARD"),
 		}); err != nil {
 			return fmt.Errorf("failed to create db file %q: %w", f.dbKey, err)
 		}
+
+		return nil
 	}
 
 	return err

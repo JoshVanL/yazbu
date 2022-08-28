@@ -81,7 +81,7 @@ type Client struct {
 // New creates a new client for this bucket. Constructs filesystem clients for
 // all filesystems defined.
 func New(opts Options) (*Client, error) {
-	log := opts.Log.WithName(opts.Bucket.Name).WithName("client")
+	log := opts.Log.WithName(opts.Bucket.Endpoint).WithName(opts.Bucket.Name).WithName("client")
 
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(opts.Bucket.Region),
@@ -104,11 +104,11 @@ func New(opts Options) (*Client, error) {
 
 	for _, fs := range opts.Filesystems {
 		c.fsclients[fs] = &fsclient{
-			log:        log,
+			log:        log.WithName(fs),
 			io:         opts.IO,
 			Client:     c,
 			filesystem: fs,
-			dbKey:      filepath.Join(fs, keyFileBackup),
+			dbKey:      filepath.Join(opts.Bucket.Name, fs, keyFileBackup),
 			force:      opts.Force,
 		}
 	}
