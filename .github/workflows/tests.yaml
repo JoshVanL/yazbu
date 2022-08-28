@@ -7,17 +7,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: nixbuild/nix-quick-install-action@v17
-      with:
-        nix_conf: experimental-features = nix-command flakes
+    - uses: cachix/install-nix-action@v17
+    - run: nix flake check
     - run: nix-shell --pure --run "go test -v --race ./cmd/... ./internal/..."
   lint:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: nixbuild/nix-quick-install-action@v17
-      with:
-        nix_conf: experimental-features = nix-command flakes
+    - uses: cachix/install-nix-action@v17
+    - run: nix flake check
     - run: nix-shell --pure --run "GOROOT=$(go env GOROOT) golangci-lint run -v --timeout 15m"
   e2e:
     needs:
@@ -26,7 +24,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: nixbuild/nix-quick-install-action@v17
-      with:
-        nix_conf: experimental-features = nix-command flakes
+    - uses: cachix/install-nix-action@v17
+    - run: nix flake check
     - run: nix-build nix/test.nix
