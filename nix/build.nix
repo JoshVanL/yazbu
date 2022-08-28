@@ -1,4 +1,4 @@
-{ pkgs ? import ./nixpkgs.nix { } }:
+{ pkgs }:
 
 pkgs.buildGo119Module rec {
   pname = "yazbu";

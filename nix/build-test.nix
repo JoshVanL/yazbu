@@ -1,4 +1,4 @@
-{ pkgs ? import ./nixpkgs.nix { } }:
+{ pkgs }:
 
 with pkgs;
 
@@ -8,7 +8,7 @@ let
   go-modules = stdenv.mkDerivation (let modArgs = {
     name = "yazbu-test-go-modules";
 
-    nativeBuildInputs = [ go_1_19 git ];
+    nativeBuildInputs = [ go_1_19 git cacert ];
 
     inherit src;
     inherit (go_1_19) GOOS GOARCH;
@@ -47,6 +47,7 @@ in stdenv.mkDerivation {
   '';
 
   buildPhase = ''
+    go test -v ./cmd/... ./internal/...
     go test -v -o yazbu-test -c ./test/e2e/.
   '';
   installPhase = ''
