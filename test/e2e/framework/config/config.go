@@ -7,6 +7,8 @@ import (
 )
 
 type Config struct {
+	YazbuBin string
+
 	Endpoint1   string
 	Endpoint2   string
 	Filesystem1 string
@@ -28,6 +30,8 @@ func GetConfig() *Config {
 }
 
 func (c *Config) AddFlags(fs *flag.FlagSet) {
+	fs.StringVar(&c.YazbuBin, "yazbu-bin", "", "yazbu-bin")
+
 	fs.StringVar(&c.Endpoint1, "endpoint-1", "", "endpoint1")
 	fs.StringVar(&c.Endpoint2, "endpoint-2", "", "endpoint2")
 	fs.StringVar(&c.Filesystem1, "filesystem-1", "", "filesystem1")
@@ -39,23 +43,21 @@ func (c *Config) AddFlags(fs *flag.FlagSet) {
 func (c *Config) Validate() error {
 	var errs []string
 
-	if len(c.Endpoint1) == 0 {
-		errs = append(errs, "endpoint-1 is required")
-	}
-	if len(c.Endpoint2) == 0 {
-		errs = append(errs, "endpoint-2 is required")
-	}
-	if len(c.Filesystem1) == 0 {
-		errs = append(errs, "filesystem-1 is required")
-	}
-	if len(c.Filesystem2) == 0 {
-		errs = append(errs, "filesystem-2 is required")
-	}
-	if len(c.BucketName1) == 0 {
-		errs = append(errs, "bucketname1 is required")
-	}
-	if len(c.BucketName2) == 0 {
-		errs = append(errs, "bucketname2 is required")
+	for _, pair := range []struct {
+		name  string
+		value string
+	}{
+		{"yazbu-bin", c.YazbuBin},
+		{"endpoint-1", c.Endpoint1},
+		{"endpoint-2", c.Endpoint2},
+		{"filesystem-1", c.Filesystem1},
+		{"filesystem-2", c.Filesystem2},
+		{"bucketname-1", c.BucketName1},
+		{"bucketname-2", c.BucketName2},
+	} {
+		if len(pair.value) == 0 {
+			errs = append(errs, pair.name+" is required")
+		}
 	}
 
 	if len(errs) > 0 {

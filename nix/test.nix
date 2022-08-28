@@ -26,7 +26,7 @@ in pkgs.nixosTest ({
       };
       networking = {
         hostId = "deadbeef";
-        extraHosts = "localhost joshvanl-test.localhost";
+        extraHosts = "127.0.0.1 joshvanl-test.localhost";
       };
       virtualisation = {
         emptyDiskImages = [ 4096 ];

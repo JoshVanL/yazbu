@@ -80,10 +80,10 @@ func (f *Framework) AfterEach() {
 		endpoint string
 		bucket   string
 	}{
-		{config.GetConfig().Endpoint1, config.GetConfig().BucketName1},
-		{config.GetConfig().Endpoint1, config.GetConfig().BucketName2},
-		{config.GetConfig().Endpoint2, config.GetConfig().BucketName1},
-		{config.GetConfig().Endpoint2, config.GetConfig().BucketName2},
+		{endpoint: config.GetConfig().Endpoint1, bucket: config.GetConfig().BucketName1},
+		{endpoint: config.GetConfig().Endpoint1, bucket: config.GetConfig().BucketName2},
+		{endpoint: config.GetConfig().Endpoint2, bucket: config.GetConfig().BucketName1},
+		{endpoint: config.GetConfig().Endpoint2, bucket: config.GetConfig().BucketName2},
 	} {
 		By(fmt.Sprintf("Deleting bucket %s on endpoint %s", pair.bucket, pair.endpoint))
 		Expect(
