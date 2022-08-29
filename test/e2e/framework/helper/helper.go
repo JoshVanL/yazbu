@@ -132,7 +132,7 @@ func (h *Helper) YazbuList(ctx context.Context, config *config.Config) (string, 
 func (h *Helper) YazbuDefaultConfig() *config.Config {
 	return (&config.Config{
 		Buckets: []config.Bucket{
-			config.Bucket{
+			{
 				Name:         h.config.BucketName1,
 				Endpoint:     h.config.Endpoint1,
 				Region:       "region",
@@ -140,7 +140,7 @@ func (h *Helper) YazbuDefaultConfig() *config.Config {
 				SecretKey:    "remote-credential",
 				StorageClass: "STANDARD",
 			},
-			config.Bucket{
+			{
 				Name:         h.config.BucketName2,
 				Endpoint:     h.config.Endpoint1,
 				Region:       "region",
@@ -148,7 +148,7 @@ func (h *Helper) YazbuDefaultConfig() *config.Config {
 				SecretKey:    "remote-credential",
 				StorageClass: "STANDARD",
 			},
-			config.Bucket{
+			{
 				Name:         h.config.BucketName1,
 				Endpoint:     h.config.Endpoint2,
 				Region:       "region",
@@ -156,7 +156,7 @@ func (h *Helper) YazbuDefaultConfig() *config.Config {
 				AccessKey:    "remote-identity",
 				SecretKey:    "remote-credential",
 			},
-			config.Bucket{
+			{
 				Name:         h.config.BucketName2,
 				Endpoint:     h.config.Endpoint2,
 				Region:       "region",

@@ -3,5 +3,5 @@
 with pkgs;
 
 pkgs.mkShell {
-  nativeBuildInputs = [ go_1_19 golangci-lint ];
+  nativeBuildInputs = [ go_1_19 ];
 }

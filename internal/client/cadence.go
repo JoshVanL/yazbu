@@ -20,6 +20,7 @@ func (f *fsclient) executeCadence(ctx context.Context, db backup.DB) error {
 
 	markedForDeletion, err := f.markedForDeletion(ctx, db)
 	if err != nil {
+
 		return err
 	}
 
