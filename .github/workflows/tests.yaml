@@ -16,8 +16,8 @@ jobs:
     - uses: actions/checkout@v2
     - uses: cachix/install-nix-action@v17
     - run: nix flake check
+    - run: nix-shell --pure --run "test -z $(gofmt -l -s .) || echo \"please run 'go fmt -s -w .'\""
     - run: nix-shell --pure --run "go vet -v ./..."
-    - run: nix-shell --pure --run "GOROOT=$(go env GOROOT) golangci-lint run -D typecheck -v --timeout 15m"
   e2e:
     needs:
     - unit
