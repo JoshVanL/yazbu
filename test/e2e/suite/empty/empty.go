@@ -14,7 +14,7 @@ var _ = framework.CasesDescribe("Empty database should list", func() {
 	f := framework.NewDefaultFramework("foo")
 
 	It("should list empty database", func() {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
 
 		By("First list should write database files")
