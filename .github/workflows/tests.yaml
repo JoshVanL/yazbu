@@ -9,8 +9,6 @@ jobs:
     - uses: cachix/install-nix-action@v17
       with:
         nix_path: nixpkgs=channel:nixos-unstable
-        extra_nix_config: |
-          system-features = nixos-test benchmark big-parallel kvm
     - uses: cachix/cachix-action@v10
       with:
         name: joshvanl-yazbu
@@ -41,6 +39,8 @@ jobs:
     - uses: cachix/install-nix-action@v17
       with:
         nix_path: nixpkgs=channel:nixos-unstable
+        extra_nix_config: |
+          system-features = nixos-test benchmark big-parallel kvm
     - uses: cachix/cachix-action@v10
       with:
         name: joshvanl-yazbu
