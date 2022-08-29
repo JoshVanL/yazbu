@@ -99,7 +99,7 @@ func Test_validate(t *testing.T) {
 		},
 		"if buckets have bad config": {
 			config: Config{
-				Buckets:     []Bucket{Bucket{}, Bucket{}},
+				Buckets:     []Bucket{{}, {}},
 				Filesystems: []string{"rpool/foo"},
 				Cadence: Cadence{
 					FullLast45Days:         &one,
@@ -114,10 +114,10 @@ func Test_validate(t *testing.T) {
 		"if duplicates of bucket endpoints, then error": {
 			config: Config{
 				Buckets: []Bucket{
-					Bucket{Name: "foo", Endpoint: "foo", Region: "region", StorageClass: "standard"},
-					Bucket{Name: "bar", Endpoint: "foo", Region: "region", StorageClass: "standard"},
-					Bucket{Name: "bar", Endpoint: "foo", Region: "region", StorageClass: "standard"},
-					Bucket{Name: "foo", Endpoint: "foo", Region: "region", StorageClass: "standard"},
+					{Name: "foo", Endpoint: "foo", Region: "region", StorageClass: "standard"},
+					{Name: "bar", Endpoint: "foo", Region: "region", StorageClass: "standard"},
+					{Name: "bar", Endpoint: "foo", Region: "region", StorageClass: "standard"},
+					{Name: "foo", Endpoint: "foo", Region: "region", StorageClass: "standard"},
 				},
 				Filesystems: []string{"rpool/foo"},
 				Cadence: Cadence{
@@ -132,7 +132,7 @@ func Test_validate(t *testing.T) {
 		},
 		"if last 45 day cadence is 0, expect error": {
 			config: Config{
-				Buckets:     []Bucket{Bucket{Name: "foo"}},
+				Buckets:     []Bucket{{Name: "foo"}},
 				Filesystems: []string{"rpool/foo"},
 				Cadence: Cadence{
 					FullLast45Days:         &zero,
@@ -146,7 +146,7 @@ func Test_validate(t *testing.T) {
 		},
 		"if validation is ok, expect no error": {
 			config: Config{
-				Buckets:     []Bucket{Bucket{Name: "foo", Endpoint: "foo", Region: "region", StorageClass: "standard"}},
+				Buckets:     []Bucket{{Name: "foo", Endpoint: "foo", Region: "region", StorageClass: "standard"}},
 				Filesystems: []string{"rpool/foo"},
 				Cadence: Cadence{
 					FullLast45Days:         &one,

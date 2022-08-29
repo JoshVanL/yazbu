@@ -13,11 +13,13 @@
 
         yazbu = pkgs.callPackage ./nix/build.nix { };
 
+        yazbu-test = pkgs.callPackage ./nix/build-test.nix { };
+
         packageName = "yazbu";
       in {
         packages.${packageName} = yazbu;
 
-        devShell = pkgs.mkShell {
+        devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [ yazbu ];
         };
     });

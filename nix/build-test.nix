@@ -47,8 +47,8 @@ in stdenv.mkDerivation {
   '';
 
   buildPhase = ''
-    go test -v ./cmd/... ./internal/...
-    go test -v -o yazbu-test -c ./test/e2e/.
+    go test -v --race ./cmd/... ./internal/...
+    go test -v --race -o yazbu-test -c ./test/e2e/.
   '';
   installPhase = ''
     mkdir -p $out/bin
