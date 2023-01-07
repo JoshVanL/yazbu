@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sort"
 	"time"
@@ -18,7 +17,7 @@ import (
 func (f *fsclient) executeCadence(ctx context.Context, db backup.DB) error {
 	f.log.Info("checking database to delete stale backups based on configured cadence...")
 
-	markedForDeletion, err := f.markedForDeletion(ctx, db)
+	markedForDeletion, err := f.markedForDeletion(db)
 	if err != nil {
 		return err
 	}
@@ -26,7 +25,7 @@ func (f *fsclient) executeCadence(ctx context.Context, db backup.DB) error {
 	for _, entry := range markedForDeletion {
 		log := f.log.WithValues("name", entry.ID, "timestamp", entry.Timestamp, "type", entry.Type)
 		log.Info("deleting backup")
-		if _, err := f.s3.DeleteObject(&s3.DeleteObjectInput{
+		if _, err := f.s3.DeleteObjectWithContext(ctx, &s3.DeleteObjectInput{
 			Bucket: aws.String(f.bucket),
 			Key:    aws.String(entry.S3Key),
 		}); err != nil {
@@ -38,8 +37,10 @@ func (f *fsclient) executeCadence(ctx context.Context, db backup.DB) error {
 	return nil
 }
 
-func (f *fsclient) markedForDeletion(ctx context.Context, db backup.DB) ([]backup.Entry, error) {
-	now := time.Now()
+// markedForDeletion will return a list of all backups which need to be deleted
+// according to the cadence.
+func (f *fsclient) markedForDeletion(db backup.DB) ([]backup.Entry, error) {
+	now := f.clock.Now()
 
 	var (
 		incrementals []backup.Entry
@@ -69,13 +70,11 @@ func (f *fsclient) markedForDeletion(ctx context.Context, db backup.DB) ([]backu
 
 		default:
 			// Get the year by mod this backup belongs to.
-			diff := entry.Timestamp.Sub(now)
-			year := int(diff % time.Hour * 24 * 365)
-			full365Plus[year] = append(full365Plus[year], entry)
+			full365Plus[entry.Timestamp.Year()] = append(full365Plus[entry.Timestamp.Year()], entry)
 		}
 
 		// Get the latest full backup.
-		if lastFull.Timestamp.IsZero() || entry.Timestamp.Before(lastFull.Timestamp) {
+		if lastFull.Timestamp.IsZero() || entry.Timestamp.After(lastFull.Timestamp) {
 			lastFull = entry
 		}
 	}
@@ -84,15 +83,10 @@ func (f *fsclient) markedForDeletion(ctx context.Context, db backup.DB) ([]backu
 
 	var incrementalsSinceLast []backup.Entry
 	for _, entry := range incrementals {
-		if entry.Timestamp.After(lastFull.Timestamp) {
-			incrementalsSinceLast = append(incrementalsSinceLast, entry)
-		} else {
-			// Delete incremental backups which are older than the last full backup.
-			f.log.Error(errors.New("marking rouge incremental backup for deletion"),
-				"found incremental backup which is older than the last full backup. Something has gone wrong, but lets clean up",
-				"id", entry.ID, "timestamp", entry.Timestamp,
-			)
+		if entry.Timestamp.Before(lastFull.Timestamp) {
 			markedForDeletion = append(markedForDeletion, entry)
+		} else {
+			incrementalsSinceLast = append(incrementalsSinceLast, entry)
 		}
 	}
 
@@ -106,9 +100,9 @@ func (f *fsclient) markedForDeletion(ctx context.Context, db backup.DB) ([]backu
 			i = entry.ID
 			continue
 		}
-		if entry.ID != i+1 {
+		if entry.ID != i+1 || entry.Parent != i {
 			return nil, fmt.Errorf(
-				"something's fucked up. incremental backups are corrupted (missing a step between %d and %d)- returning error to be safe. Please fix manually (probably by manually deleting all incremental backups. Sorry friend.)",
+				"something's gone wrong. Incremental backups are corrupted (missing a step between %d and %d)- returning error to be safe. Please fix manually (probably by manually deleting all incremental backups. Sorry friend.)",
 				i, entry.ID)
 		}
 		i++
@@ -137,12 +131,13 @@ func (f *fsclient) markedForDeletion(ctx context.Context, db backup.DB) ([]backu
 	}
 
 	for year, entries := range full365Plus {
+		fmt.Printf("%d %v\n", year, entries)
 		for len(entries) > int(db.Cadence.FullPer365Over365Days) {
 			n := len(entries) / 2
 			f.log.Info("deleting full backup from full365Plus",
-				"id", fullLast45[n].ID,
-				"timestamp", fullLast45[n].Timestamp,
-				"backups", len(fullLast45),
+				"id", full365Plus[year][n].ID,
+				"timestamp", full365Plus[year][n].Timestamp,
+				"backups", len(full365Plus[year]),
 				"max", int(db.Cadence.FullPer365Over365Days),
 				"year", now.Year()-year,
 			)
@@ -151,5 +146,8 @@ func (f *fsclient) markedForDeletion(ctx context.Context, db backup.DB) ([]backu
 		}
 	}
 
+	sort.SliceStable(markedForDeletion, func(i, j int) bool {
+		return markedForDeletion[i].ID < markedForDeletion[j].ID
+	})
 	return markedForDeletion, nil
 }

@@ -9,13 +9,13 @@ import (
 	"reflect"
 	"sort"
 	"sync"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/go-logr/logr"
+	"k8s.io/utils/clock"
 
 	"github.com/joshvanl/yazbu/internal/backup"
 	"github.com/joshvanl/yazbu/internal/client/progress"
@@ -46,6 +46,9 @@ type fsclient struct {
 
 	// lock gates concurrent access to the database file.
 	lock sync.Mutex
+
+	// clock is used for testing.
+	clock clock.Clock
 }
 
 // writeFull writes the full backup of the filesystem to the S3 bucket. Updates
@@ -66,7 +69,7 @@ func (f *fsclient) writeFull(ctx context.Context, db backup.DB, key string, size
 
 		progress := progress.New(path.Join(f.bucket, f.filesystem, key), size, reader)
 
-		if _, err := f.uploader.Upload(&s3manager.UploadInput{
+		if _, err := f.uploader.UploadWithContext(ctx, &s3manager.UploadInput{
 			Bucket:       aws.String(f.bucket),
 			Key:          aws.String(key),
 			Body:         progress,
@@ -77,7 +80,7 @@ func (f *fsclient) writeFull(ctx context.Context, db backup.DB, key string, size
 
 		var parent int
 		for _, entry := range db.Entries {
-			if entry.ID > parent {
+			if entry.Type == backup.TypeFull && entry.ID > parent {
 				parent = entry.ID
 			}
 		}
@@ -85,7 +88,7 @@ func (f *fsclient) writeFull(ctx context.Context, db backup.DB, key string, size
 		db.Entries = append(db.Entries, backup.Entry{
 			ID:        parent + 1,
 			Parent:    parent,
-			Timestamp: time.Now(),
+			Timestamp: f.clock.Now(),
 			Type:      backup.TypeFull,
 			S3Key:     key,
 			Size:      size,
@@ -98,7 +101,7 @@ func (f *fsclient) writeFull(ctx context.Context, db backup.DB, key string, size
 			return err
 		}
 
-		if _, err := f.uploader.Upload(&s3manager.UploadInput{
+		if _, err := f.uploader.UploadWithContext(ctx, &s3manager.UploadInput{
 			Bucket:       aws.String(f.bucket),
 			Key:          aws.String(f.dbKey),
 			Body:         &buf,
@@ -159,15 +162,10 @@ remote:
 	}, nil
 }
 
-//// tidyDB removes old entries from the database file which no longer exist.
-//func (f *fsclient) tidyDB(ctx context.Context, db backup.DB) error {
-//	return nil
-//}
-
 // ensureDBFiles ensures that the database file exists in the bucket
 // filesystem.
 func (f *fsclient) ensureDBFile(ctx context.Context) error {
-	_, err := f.s3.HeadObject(&s3.HeadObjectInput{
+	_, err := f.s3.HeadObjectWithContext(ctx, &s3.HeadObjectInput{
 		Bucket: aws.String(f.bucket),
 		Key:    aws.String(f.dbKey),
 	})

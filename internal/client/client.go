@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/go-logr/logr"
+	"k8s.io/utils/clock"
 
 	"github.com/joshvanl/yazbu/internal/backup"
 	"github.com/joshvanl/yazbu/internal/config"
@@ -110,6 +111,7 @@ func New(opts Options) (*Client, error) {
 			filesystem: fs,
 			dbKey:      filepath.Join(opts.Bucket.Name, fs, keyFileBackup),
 			force:      opts.Force,
+			clock:      clock.RealClock{},
 		}
 	}
 

@@ -26,13 +26,13 @@ let
       {
         outputHashMode = "recursive";
         outputHashAlgo = "sha256";
-        outputHash = "sha256-dsFA+s6zHyGgl/FqtncwkHfPlJve0gFZP6ooTLN01ZM=";
+        outputHash = "sha256-KDMFbHo341pIvyoi3i/l46In+gCAhyIwwkDWl2yPSzo=";
       }
   ) // modArgs);
 
 in stdenv.mkDerivation {
   name = "yazbu-test";
-  src = ../.;
+  src = lib.sourceFilesBySuffices ./.. [ ".go" ".mod" ".sum" ];
 
   nativeBuildInputs = [ go ];
 
@@ -47,8 +47,10 @@ in stdenv.mkDerivation {
   '';
 
   buildPhase = ''
-    go test -v ./cmd/... ./internal/...
-    go test -v -o yazbu-test -c ./test/e2e/.
+    gofmt -s -l -e .
+    go vet -v ./...
+    go test --race -v ./cmd/... ./internal/...
+    go test --race -v -o yazbu-test -c ./test/e2e/.
   '';
   installPhase = ''
     mkdir -p $out/bin

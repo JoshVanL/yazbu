@@ -1,4 +1,4 @@
-{ pkgs ? import ./nixpkgs.nix { }, ... }:
+{ pkgs }:
 
 let
   s3mockFromDockerHub = pkgs.dockerTools.pullImage {

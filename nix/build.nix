@@ -6,7 +6,7 @@ pkgs.buildGo119Module rec {
 
   src = ../.;
 
-  vendorSha256 = "sha256-dsFA+s6zHyGgl/FqtncwkHfPlJve0gFZP6ooTLN01ZM=";
+  vendorSha256 = "sha256-KDMFbHo341pIvyoi3i/l46In+gCAhyIwwkDWl2yPSzo=";
   subPackages = [ "cmd" ];
   doChecks = false;
   nativeBuildInputs = [ pkgs.installShellFiles ];
