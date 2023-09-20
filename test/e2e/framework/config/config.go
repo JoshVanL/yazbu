@@ -15,6 +15,10 @@ type Config struct {
 	Filesystem2 string
 	BucketName1 string
 	BucketName2 string
+	AccessKey1  string
+	AccessKey2  string
+	SecretKey1  string
+	SecretKey2  string
 }
 
 var (
@@ -38,6 +42,10 @@ func (c *Config) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&c.Filesystem2, "filesystem-2", "", "filesystem2")
 	fs.StringVar(&c.BucketName1, "bucketname-1", "", "bucketname-1")
 	fs.StringVar(&c.BucketName2, "bucketname-2", "", "bucketname-2")
+	fs.StringVar(&c.AccessKey1, "access-key-1", "", "access-key-1")
+	fs.StringVar(&c.AccessKey2, "access-key-2", "", "access-key-2")
+	fs.StringVar(&c.SecretKey1, "secret-key-1", "", "secret-key-1")
+	fs.StringVar(&c.SecretKey2, "secret-key-2", "", "secret-key-2")
 }
 
 func (c *Config) Validate() error {
@@ -54,6 +62,10 @@ func (c *Config) Validate() error {
 		{"filesystem-2", c.Filesystem2},
 		{"bucketname-1", c.BucketName1},
 		{"bucketname-2", c.BucketName2},
+		{"access-key-1", c.AccessKey1},
+		{"access-key-2", c.AccessKey2},
+		{"secret-key-1", c.SecretKey1},
+		{"secret-key-2", c.SecretKey2},
 	} {
 		if len(pair.value) == 0 {
 			errs = append(errs, pair.name+" is required")

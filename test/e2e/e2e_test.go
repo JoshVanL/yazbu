@@ -6,7 +6,7 @@ import (
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 
-	_ "github.com/joshvanl/yazbu/test/e2e/suite"
+	_ "github.com/joshvanl/yazbu/e2e/suite"
 )
 
 func TestE2E(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/joshvanl/yazbu/test/e2e/framework"
+	"github.com/joshvanl/yazbu/e2e/framework"
 )
 
 var _ = framework.CasesDescribe("Empty database should list", func() {

@@ -16,7 +16,7 @@ import (
 	"k8s.io/utils/clock"
 
 	"github.com/joshvanl/yazbu/internal/backup"
-	"github.com/joshvanl/yazbu/internal/config"
+	"github.com/joshvanl/yazbu/config"
 	"github.com/joshvanl/yazbu/internal/util"
 	"github.com/joshvanl/yazbu/internal/zfs"
 )

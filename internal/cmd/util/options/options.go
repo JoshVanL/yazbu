@@ -11,7 +11,7 @@ import (
 	"github.com/go-logr/stdr"
 	"github.com/spf13/cobra"
 
-	"github.com/joshvanl/yazbu/internal/config"
+	"github.com/joshvanl/yazbu/config"
 	"github.com/joshvanl/yazbu/internal/manager"
 	"github.com/joshvanl/yazbu/internal/util"
 )

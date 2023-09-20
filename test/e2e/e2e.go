@@ -5,7 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 
-	"github.com/joshvanl/yazbu/test/e2e/framework/config"
+	"github.com/joshvanl/yazbu/e2e/framework/config"
 )
 
 var (

@@ -7,7 +7,7 @@ import (
 	"github.com/go-logr/logr"
 
 	"github.com/joshvanl/yazbu/internal/client"
-	"github.com/joshvanl/yazbu/internal/config"
+	"github.com/joshvanl/yazbu/config"
 	"github.com/joshvanl/yazbu/internal/util"
 )
 

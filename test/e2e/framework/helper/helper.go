@@ -18,8 +18,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"gopkg.in/yaml.v3"
 
-	"github.com/joshvanl/yazbu/internal/config"
-	testconfig "github.com/joshvanl/yazbu/test/e2e/framework/config"
+	"github.com/joshvanl/yazbu/config"
+	testconfig "github.com/joshvanl/yazbu/e2e/framework/config"
 )
 
 type Helper struct {
@@ -136,16 +136,16 @@ func (h *Helper) YazbuDefaultConfig() *config.Config {
 				Name:         h.config.BucketName1,
 				Endpoint:     h.config.Endpoint1,
 				Region:       "region",
-				AccessKey:    "remote-identity",
-				SecretKey:    "remote-credential",
+				AccessKey:    h.config.AccessKey1,
+				SecretKey:    h.config.SecretKey1,
 				StorageClass: "STANDARD",
 			},
 			config.Bucket{
 				Name:         h.config.BucketName2,
 				Endpoint:     h.config.Endpoint1,
 				Region:       "region",
-				AccessKey:    "remote-identity",
-				SecretKey:    "remote-credential",
+				AccessKey:    h.config.AccessKey2,
+				SecretKey:    h.config.SecretKey2,
 				StorageClass: "STANDARD",
 			},
 			config.Bucket{
@@ -153,16 +153,16 @@ func (h *Helper) YazbuDefaultConfig() *config.Config {
 				Endpoint:     h.config.Endpoint2,
 				Region:       "region",
 				StorageClass: "STANDARD",
-				AccessKey:    "remote-identity",
-				SecretKey:    "remote-credential",
+				AccessKey:    h.config.AccessKey1,
+				SecretKey:    h.config.SecretKey1,
 			},
 			config.Bucket{
 				Name:         h.config.BucketName2,
 				Endpoint:     h.config.Endpoint2,
 				Region:       "region",
 				StorageClass: "STANDARD",
-				AccessKey:    "remote-identity",
-				SecretKey:    "remote-credential",
+				AccessKey:    h.config.AccessKey2,
+				SecretKey:    h.config.SecretKey2,
 			},
 		},
 		Filesystems: []string{
